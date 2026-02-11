@@ -266,7 +266,9 @@ function UI:open(opts)
     if position == "right" and not vim.opt.splitright:get() then
       vim.cmd("wincmd l")
     end
-    vim.cmd("vertical resize " .. width)
+    if config.display.chat.width > 0 then
+      vim.cmd("vertical resize " .. width)
+    end
     self.winnr = api.nvim_get_current_win()
     api.nvim_win_set_buf(self.winnr, self.chat_bufnr)
     apply_window_config(self.winnr, self.chat_bufnr, window.opts)
@@ -282,7 +284,9 @@ function UI:open(opts)
     if position == "bottom" and not vim.opt.splitbelow:get() then
       vim.cmd("wincmd j")
     end
-    vim.cmd("resize " .. height)
+    if config.display.chat.height > 0 then
+      vim.cmd("resize " .. height)
+    end
     self.winnr = api.nvim_get_current_win()
     api.nvim_win_set_buf(self.winnr, self.chat_bufnr)
     apply_window_config(self.winnr, self.chat_bufnr, window.opts)
