@@ -223,42 +223,48 @@ CodeCompanion.cmd = function(args)
   end
 end
 
+--- @type table<number, CodeCompanion.Chat> tabpage -> chat instance
+local chats = {}
+
 ---Toggle the chat buffer
 ---@param args? table
 ---@return nil
 CodeCompanion.toggle = function(args)
   local window_opts = args and args.window_opts
+  local tabpage = vim.api.nvim_get_current_tabpage()
+  local chat = chats[tabpage]
 
-  -- Get the most recent chat buffer, or create one
-  local chat = CodeCompanion.last_chat()
-  if not chat then
-    local chat_opts = {}
-    if args and args.params then
-      chat_opts.params = args.params
+  if chat then
+    if chat.ui:is_visible() then
+      chat.ui:hide()
+      return
+    else
+      -- Chat exists for this tab, just open it
+      local opts = { toggled = true }
+      if window_opts then
+        opts.window_opts = window_opts
+      end
+      chat.ui:open(opts)
+      return
     end
-    if window_opts then
-      chat_opts.window_opts = window_opts
-    end
-
-    return CodeCompanion.chat(chat_opts)
   end
 
-  -- If the chat is visible in a different tab, just hide it there
-  if chat.ui:is_visible_non_curtab() then
-    chat.ui:hide()
-  -- If the chat is visible in the current tab, hide it and return early
-  elseif chat.ui:is_visible() then
-    return chat.ui:hide()
+  local chat_opts = {}
+  if args and args.params then
+    chat_opts.params = args.params
   end
+  if window_opts then
+    chat_opts.window_opts = window_opts
+  end
+  local new_chat = CodeCompanion.chat(chat_opts)
+  if not new_chat then
+    return
+  end
+  chat = new_chat
 
-  chat.buffer_context = get_context(api.nvim_get_current_buf())
+  chat.buffer_context = get_context(vim.api.nvim_get_current_buf())
+  chats[tabpage] = chat
 
-  -- At this point, the chat exists but is not visible in the current tab
-
-  -- Close the chat window (if it's open elsewhere)
-  CodeCompanion.close_last_chat()
-
-  -- Reopen the chat in the current tab with the toggled flag
   local opts = { toggled = true }
   if window_opts then
     opts.window_opts = window_opts

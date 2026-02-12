@@ -537,7 +537,6 @@ function Chat.new(args)
     self.messages = args.messages
   end
 
-  self.close_last_chat()
   self.ui:open():render(self.buffer_context, self.messages, { stop_context_insertion = args.stop_context_insertion })
 
   -- Set the header line for the chat buffer
@@ -1722,7 +1721,7 @@ end
 function Chat.close_last_chat()
   if last_chat and not vim.tbl_isempty(last_chat) then
     if last_chat.ui:is_visible() then
-      last_chat.ui:hide()
+      -- last_chat.ui:hide()
     end
   end
 end
